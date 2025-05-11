@@ -18,9 +18,9 @@ class CatCharacter:
 
     def create_cat_image(self):
         file_names = {
-            CatType.ORANGE: "b_cat.png",
-            CatType.GRAY: "buou_cat.png",
-            CatType.WHITE: "jumao.png"
+            CatType.ORANGE: "ball_b.png",
+            CatType.GRAY: "ball_buou.png",
+            CatType.WHITE: "ball_ju.png"
         }
         color_map = {
             CatType.ORANGE: ORANGE,
@@ -28,7 +28,7 @@ class CatCharacter:
             CatType.WHITE: WHITE
         }
 
-        image = get_img_dir("img/screen_menu", file_names[self.type], self.size, self.size)
+        image = get_img_dir("img/screen_3/cat_ball", file_names[self.type], self.size, self.size)
         if is_fallback(image):
             image = create_pixel_cat(color_map[self.type])
         return image

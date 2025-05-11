@@ -27,9 +27,10 @@ class CatBounceGame:
         self.begin_background = get_img_dir("img/screen_begin", "screen_begin.png", WIDTH, HEIGHT)
         self.begin_button_img = get_img_dir("img/screen_begin", "kaishi.png", 200, 80)
         self.menu_background = get_img_dir("img/screen_menu", "screen_menu.png", WIDTH, HEIGHT)
-        self.level1_background = get_img_dir("img/screen_3/level/01", "steage_01.png", WIDTH, HEIGHT)
-        self.level2_background = get_img_dir("img/screen_3/level/02", "steage_01.png", WIDTH, HEIGHT)
-        self.level3_background = get_img_dir("img/screen_3/level/03", "steage_01.png", WIDTH, HEIGHT)
+        self.level1_background = get_img_dir("img/screen_3/level/01", "stage_01.png", WIDTH, HEIGHT)
+        self.level2_background = get_img_dir("img/screen_3/level/02", "stage_02.png", WIDTH, HEIGHT)
+        self.level3_background = get_img_dir("img/screen_3/level/03", "stage_03.png", WIDTH, HEIGHT)
+        self.gameover_background = get_img_dir("img", "game_over.png", WIDTH, HEIGHT)
         # 修改初始化状态
         self.state = "begin"  # 新增初始状态
         # self.click_sound = pygame.mixer.Sound('audio/click.wav')
@@ -39,6 +40,7 @@ class CatBounceGame:
 
     def reset_game(self):
         self.cat_ball = None
+        self.bgs = None
         self.obstacles = []
         self.targets = []
         self.launch_power = 0
@@ -50,14 +52,16 @@ class CatBounceGame:
     def setup_level(self):
         level_layouts = {
             1: {
+                "bgs": self.level1_background,
                 "obstacles": [
-                    Obstacle(300, 400, 200, 20, ObstacleType.BLOCK),
-                    Obstacle(200, 300, 150, 20, ObstacleType.BLOCK),
-                    Obstacle(500, 350, 100, 20, ObstacleType.CAT_TREE)
+                    Obstacle(0, 0, 10, 10, ObstacleType.BLOCK),
+                    #Obstacle(0, 540, 696, 200, ObstacleType.CAT_TREE),
+
                 ],
-                "targets": [Target(700, 550)]
+                "targets": [Target(900, 150)]
             },
             2: {
+                "bgs": self.level2_background,
                 "obstacles": [
                     Obstacle(250, 450, 150, 20, ObstacleType.BLOCK),
                     Obstacle(400, 350, 100, 20, ObstacleType.BLOWER),
@@ -67,6 +71,7 @@ class CatBounceGame:
                 "targets": [Target(650, 100)]
             },
             3: {
+                "bgs": self.level3_background,
                 "obstacles": [
                     Obstacle(200, 500, 100, 20, ObstacleType.BLOCK),
                     Obstacle(350, 400, 100, 20, ObstacleType.BLOWER),
@@ -78,6 +83,7 @@ class CatBounceGame:
             }
         }
         layout = level_layouts[self.level]
+        self.bgs = layout["bgs"]
         self.obstacles = layout["obstacles"]
         self.targets = layout["targets"]
         if self.selected_cat:
@@ -109,9 +115,7 @@ class CatBounceGame:
                     self.transition_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
                     while self.transition_rect.width > 0:
                         self.transition_rect.inflate_ip(-20, -20)
-                        pygame.draw.rect(self.screen, BLACK, self.transition_rect)
                         pygame.display.update()
-                        pygame.time.wait(30)
 
             elif self.state == "menu" and event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
@@ -279,6 +283,7 @@ class CatBounceGame:
             # 加载选择按钮素材
             select_button = get_img_dir("img/screen_menu","select_button.png", 80, 80)
 
+
             # 绘制角色选项
             for i, cat in enumerate(self.cat_options):
                 pos_x = start_x + i * option_spacing
@@ -324,7 +329,8 @@ class CatBounceGame:
                     self.screen.blit(text_surf, pos)
 
         elif self.state == "playing":
-            self.screen.blit(self.level1_background, (0, 0))
+            #self.screen.blit(self.level1_background, (0, 0))
+            self.screen.blit(self.bgs, (0, 0))
             for obstacle in self.obstacles:
                 obstacle.draw(self.screen)
             for target in self.targets:
@@ -335,7 +341,13 @@ class CatBounceGame:
             if self.charging and self.selected_cat.traits["aim_assist"] > 0:
                 for i in range(len(self.aim_line)-1):
                     pygame.draw.line(self.screen, (100,100,255),
-                                    self.aim_line[i], self.aim_line[i+1], 2)
+                                    self.aim_line[i], self.aim_line[i+1], 5)
+
+            #绘制冰箱图层
+            # select_bingxiang = get_img_dir("img/screen_3/level/01", "01_bingxiang.png", 1280, 720)
+            # self.screen.blit(select_bingxiang, (0, -0))
+            #select_di = get_img_dir("img/screen_3/level/01", "01_di.png", 1280, 720)
+            #self.screen.blit(select_di, (0, -0))
 
             # 绘制蓄力条
             if self.charging:
@@ -368,6 +380,7 @@ class CatBounceGame:
 
         elif self.state == "game_over":
             # 绘制游戏结束界面
+            self.screen.blit(self.gameover_background, (0, 0))
             over_text = self.big_font.render("游戏结束", True, BLACK)
             self.screen.blit(over_text, (WIDTH // 2 - over_text.get_width() // 2, HEIGHT // 2 - 50))
 

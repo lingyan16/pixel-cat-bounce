@@ -6,6 +6,8 @@ from constants import (
     WHITE, GREEN, RED, BLUE, BLACK, PINK, GRAY, HEIGHT, WIDTH
 )
 from game.characters import CatType,CatCharacter
+from game.utils import get_img_dir, get_obs_dir
+
 
 class ObstacleType(Enum):
     BLOWER = 1
@@ -17,6 +19,7 @@ class ObstacleType(Enum):
 class Obstacle:
     def __init__(self, x, y, width, height, obs_type):
         self.rect = pygame.Rect(x, y, width, height)
+        self.image = None
         self.type = obs_type
         self.setup_obstacle()
 
@@ -24,11 +27,17 @@ class Obstacle:
         obstacle_info = {
             ObstacleType.BLOWER: {"color": (200, 230, 255), "effect": "blow"},
             ObstacleType.CAT_TREE: {"color": (160, 82, 45), "effect": "bounce_vertical"},
-            ObstacleType.CATNIP: {"color": (144, 238, 144), "effect": "stick"},
+            ObstacleType.CATNIP: { "color": (144, 238, 144), "effect": "stick"},
             ObstacleType.TREAT: {"color": (255, 215, 0), "effect": "boost"},
-            ObstacleType.BLOCK: {"color": PINK, "effect": None}
+            ObstacleType.BLOCK: { "image_path": get_obs_dir("cat_coin.png"),  # 假设在utils中定义了资源路径获取方法
+                "effect": None}
         }
-        self.color = obstacle_info[self.type]["color"]
+        if self.type in obstacle_info and "image_path" in obstacle_info[self.type]:
+            raw_image = pygame.image.load(obstacle_info[self.type]["image_path"]).convert_alpha()
+            self.image = pygame.transform.scale(raw_image, (self.rect.width, self.rect.height))
+        else:
+            # 保持原有颜色逻辑
+            self.color = obstacle_info[self.type]["color"]
         self.effect = obstacle_info[self.type]["effect"]
 
     def apply_effect(self, ball):
@@ -46,20 +55,23 @@ class Obstacle:
             ball.velocity[1] *= 1.5
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, self.rect)
-        if self.type == ObstacleType.BLOWER:
-            pygame.draw.circle(screen, WHITE, self.rect.center, 5)
-        elif self.type == ObstacleType.CAT_TREE:
-            pygame.draw.line(screen, BLACK, (self.rect.centerx, self.rect.top),
-                             (self.rect.centerx, self.rect.bottom), 3)
-        elif self.type == ObstacleType.CATNIP:
-            pygame.draw.polygon(screen, GREEN, [
-                (self.rect.centerx, self.rect.top + 5),
-                (self.rect.left + 5, self.rect.bottom - 5),
-                (self.rect.right - 5, self.rect.bottom - 5)
-            ])
-        elif self.type == ObstacleType.TREAT:
-            pygame.draw.ellipse(screen, RED, self.rect.inflate(-20, -10))
+        if self.image:  # 优先绘制图片
+            screen.blit(self.image, self.rect)
+        else:
+            pygame.draw.rect(screen, self.color, self.rect)
+            if self.type == ObstacleType.BLOWER:
+                pygame.draw.circle(screen, WHITE, self.rect.center, 5)
+            elif self.type == ObstacleType.CAT_TREE:
+                pygame.draw.line(screen, BLACK, (self.rect.centerx, self.rect.top),
+                                 (self.rect.centerx, self.rect.bottom), 3)
+            elif self.type == ObstacleType.CATNIP:
+                pygame.draw.polygon(screen, GREEN, [
+                    (self.rect.centerx, self.rect.top + 5),
+                    (self.rect.left + 5, self.rect.bottom - 5),
+                    (self.rect.right - 5, self.rect.bottom - 5)
+                ])
+            elif self.type == ObstacleType.TREAT:
+                pygame.draw.ellipse(screen, RED, self.rect.inflate(-20, -10))
 
 class Target:
     def __init__(self, x, y):

@@ -16,6 +16,9 @@ def get_img_dir(folder, file_name, width, height):
         fallback.fill((230, 230, 250))
         return fallback
 
+def get_obs_dir(filename):
+    return os.path.join("img", "screen_3/iteam", filename)
+
 def create_pixel_cat(base_color):
     surface = pygame.Surface((40, 40), pygame.SRCALPHA)
     pygame.draw.circle(surface, base_color, (20, 20), 20)
