@@ -3,7 +3,7 @@ import pygame
 
 # 屏幕尺寸
 WIDTH, HEIGHT = 1280, 720
-CAT_SIZE = 100
+CAT_SIZE = 60
 
 # 颜色定义
 WHITE = (255, 255, 255)
@@ -21,3 +21,14 @@ ORANGE = (255, 165, 0)
 FONT_NAME = "SimHei"
 FONT_SIZE = int(24 * min(WIDTH/1280, HEIGHT/720))
 BIG_FONT_SIZE = int(36 * min(WIDTH/1280, HEIGHT/720))
+
+# menu
+BUTTON_SIZE = 80
+BAR_WIDTH = 160
+BAR_HEIGHT = 8
+
+# stage_1
+CAT_SIZE_STAGE_1 = 60
+
+# 第一关物品
+DESK_WIDTH, DESK_HEIGHT = 750, 200

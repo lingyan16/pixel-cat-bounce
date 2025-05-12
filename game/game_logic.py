@@ -5,7 +5,8 @@ import math
 from game.characters import CatType, CatCharacter
 from game.objects import Obstacle, Target, CatBall, ObstacleType, Particle
 from game.utils import get_img_dir, init_fonts
-from constants import WIDTH, HEIGHT, BLACK, RED, WHITE, GREEN, CAT_SIZE
+from constants import WIDTH, HEIGHT, BLACK, RED, WHITE, GREEN, CAT_SIZE, DESK_WIDTH, DESK_HEIGHT, BUTTON_SIZE, \
+    BAR_WIDTH, BAR_HEIGHT
 
 
 class CatBounceGame:
@@ -30,7 +31,7 @@ class CatBounceGame:
         self.level1_background = get_img_dir("img/screen_3/level/01", "stage_01.png", WIDTH, HEIGHT)
         self.level2_background = get_img_dir("img/screen_3/level/02", "stage_02.png", WIDTH, HEIGHT)
         self.level3_background = get_img_dir("img/screen_3/level/03", "stage_03.png", WIDTH, HEIGHT)
-        self.gameover_background = get_img_dir("img", "game_over.png", WIDTH, HEIGHT)
+        self.gameOver_background = get_img_dir("img", "game_over.png", WIDTH, HEIGHT)
         # 修改初始化状态
         self.state = "begin"  # 新增初始状态
         # self.click_sound = pygame.mixer.Sound('audio/click.wav')
@@ -54,19 +55,19 @@ class CatBounceGame:
             1: {
                 "bgs": self.level1_background,
                 "obstacles": [
-                    Obstacle(0, 0, 10, 10, ObstacleType.BLOCK),
-                    #Obstacle(0, 540, 696, 200, ObstacleType.CAT_TREE),
+                    Obstacle(3 * WIDTH // 5, 3 * HEIGHT // 11, 500, 550, ObstacleType.BLOCK),
+                    # Obstacle(0, HEIGHT-DESK_HEIGHT, DESK_WIDTH, DESK_HEIGHT, ObstacleType.DESK),
 
                 ],
-                "targets": [Target(900, 150)]
+                "targets": [Target(900, 130)]
             },
             2: {
                 "bgs": self.level2_background,
                 "obstacles": [
-                    Obstacle(250, 450, 150, 20, ObstacleType.BLOCK),
-                    Obstacle(400, 350, 100, 20, ObstacleType.BLOWER),
-                    Obstacle(300, 250, 200, 20, ObstacleType.TREAT),
-                    Obstacle(150, 150, 100, 20, ObstacleType.CATNIP)
+                    # Obstacle(250, 450, 150, 20, ObstacleType.BLOCK),
+                    # Obstacle(400, 350, 100, 20, ObstacleType.BLOWER),
+                    # Obstacle(300, 250, 200, 20, ObstacleType.TREAT),
+                    # Obstacle(150, 150, 100, 20, ObstacleType.CATNIP)
                 ],
                 "targets": [Target(650, 100)]
             },
@@ -87,7 +88,7 @@ class CatBounceGame:
         self.obstacles = layout["obstacles"]
         self.targets = layout["targets"]
         if self.selected_cat:
-            self.cat_ball = CatBall(100, HEIGHT - 100, self.selected_cat)
+            self.cat_ball = CatBall(100, HEIGHT-CAT_SIZE-DESK_HEIGHT, self.selected_cat)
 
     def spawn_particles(self, effect_type):
         if len(self.particles) > 100:  # 最大粒子数限制
@@ -230,12 +231,12 @@ class CatBounceGame:
             self.screen.blit(self.begin_background, (0, 0))
 
             # 生成星光粒子（每帧生成）
-            #if random.random() < 0.2:
-                #self.spawn_particles("star")
+            if random.random() < 0.2:
+                self.spawn_particles("star")
 
             # 绘制所有粒子
-            #for p in self.particles:
-                #p.draw(self.screen)
+            for p in self.particles:
+                p.draw(self.screen)
 
             # 绘制开始按钮（带点击反馈）
             button_rect = self.begin_button_img.get_rect(center=(WIDTH // 2, 500))
@@ -279,47 +280,48 @@ class CatBounceGame:
             option_spacing = 200  # 选项间距增加
             total_width = (len(self.cat_options) - 1) * (option_spacing + CAT_SIZE) + CAT_SIZE # 总宽度包含按钮
             start_x = (WIDTH - total_width) // 2
+            base_y = 300  # 基础Y坐标
 
             # 加载选择按钮素材
-            select_button = get_img_dir("img/screen_menu","select_button.png", 80, 80)
-
+            select_button = get_img_dir("img/screen_menu","select_button.png", BUTTON_SIZE, BUTTON_SIZE)
 
             # 绘制角色选项
             for i, cat in enumerate(self.cat_options):
                 pos_x = start_x + i * option_spacing
-                base_y = 300  # 基础Y坐标
 
                 # 猫咪卡片容器（增加高度容纳下方按钮）
+                card_width = 180
                 card_height = 320
                 pygame.draw.rect(self.screen, (245, 245, 245, 50),
-                                 (pos_x + 60, base_y + 0, 180, card_height),
+                                 (pos_x, base_y, card_width, card_height),
                                  border_radius=10)
 
                 # 角色图片区域
-                img_pos = (pos_x + 100, base_y + 20)  # 居中显示
-                self.screen.blit(cat.image, img_pos)
+                img_pos = (pos_x + card_width // 2 - CAT_SIZE // 2, base_y + 20)  # 居中显示
+                self.screen.blit(cat.image_menu, img_pos)
 
                 # 选择按钮（位于图片下方40px处）
-                button_y = base_y + 140  # 图片高度100 + 间隔40
-                button_rect = select_button.get_rect(topleft=(pos_x + 110, button_y))
+                button_y = base_y + 120  # 图片高度100 + 间隔40
+                button_rect = select_button.get_rect(topleft=(pos_x + card_width // 2 - BUTTON_SIZE // 2, button_y))
                 self.screen.blit(select_button, button_rect)
 
                 # 按钮文字
-                text = self.font.render("选择", True, (255, 255, 255))
+                text = self.font.render("选择", True, WHITE)
                 text_rect = text.get_rect(center=button_rect.center)
                 self.screen.blit(text, text_rect)
 
                 # 属性显示（下移避开按钮区域）
                 # 力量进度条
+                bar_x = pos_x + card_width // 2 - BAR_WIDTH // 2
                 bar_y = button_y + 100  # 按钮下方间隔
-                pygame.draw.rect(self.screen, (80, 80, 80), (pos_x + 70, bar_y, 160, 8))
+                pygame.draw.rect(self.screen, (80, 80, 80), (bar_x, bar_y, BAR_WIDTH, BAR_HEIGHT))
                 pygame.draw.rect(self.screen, (255, 100, 100),
-                                 (pos_x + 70, bar_y, 160 * (cat.traits["power"] / 10), 8))
+                                 (bar_x, bar_y, BAR_WIDTH * (cat.traits["power"] / 10), BAR_HEIGHT))
 
                 # 文字属性（两列式布局）
                 traits_positions = [
-                    (pos_x + 80, bar_y + 20),  # 力量数值
-                    (pos_x + 80, bar_y + 50)  # 辅助属性
+                    (bar_x, bar_y + 20),  # 力量数值
+                    (bar_x, bar_y + 50)  # 辅助属性
                 ]
                 for j, (text, pos) in enumerate(zip(
                         [f"力量: {cat.traits['power']}", f"辅助: {cat.traits['aim_assist']}"],
@@ -336,6 +338,7 @@ class CatBounceGame:
             for target in self.targets:
                 target.draw(self.screen)
             if self.cat_ball:
+
                 self.cat_ball.draw(self.screen)
 
             if self.charging and self.selected_cat.traits["aim_assist"] > 0:
@@ -380,7 +383,7 @@ class CatBounceGame:
 
         elif self.state == "game_over":
             # 绘制游戏结束界面
-            self.screen.blit(self.gameover_background, (0, 0))
+            self.screen.blit(self.gameOver_background, (0, 0))
             over_text = self.big_font.render("游戏结束", True, BLACK)
             self.screen.blit(over_text, (WIDTH // 2 - over_text.get_width() // 2, HEIGHT // 2 - 50))
 

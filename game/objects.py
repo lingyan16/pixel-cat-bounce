@@ -3,7 +3,7 @@ import math
 import random
 from enum import Enum
 from constants import (
-    WHITE, GREEN, RED, BLUE, BLACK, PINK, GRAY, HEIGHT, WIDTH
+    WHITE, GREEN, RED, BLUE, BLACK, PINK, GRAY, HEIGHT, WIDTH, CAT_SIZE_STAGE_1
 )
 from game.characters import CatType,CatCharacter
 from game.utils import get_img_dir, get_obs_dir
@@ -15,6 +15,7 @@ class ObstacleType(Enum):
     CATNIP = 3
     TREAT = 4
     BLOCK = 5
+    DESK = 6
 
 class Obstacle:
     def __init__(self, x, y, width, height, obs_type):
@@ -29,12 +30,15 @@ class Obstacle:
             ObstacleType.CAT_TREE: {"color": (160, 82, 45), "effect": "bounce_vertical"},
             ObstacleType.CATNIP: { "color": (144, 238, 144), "effect": "stick"},
             ObstacleType.TREAT: {"color": (255, 215, 0), "effect": "boost"},
-            ObstacleType.BLOCK: { "image_path": get_obs_dir("cat_coin.png"),  # 假设在utils中定义了资源路径获取方法
-                "effect": None}
+            ObstacleType.BLOCK: { "image": get_img_dir("img/screen_3/level/01","01_bingxiang.png",self.rect.width,self.rect.height),  # 假设在utils中定义了资源路径获取方法
+                "effect": None},
+            ObstacleType.DESK: {
+                "image": get_img_dir("img/screen_3/level/01", "01_di.png", self.rect.width, self.rect.height),
+                # 假设在utils中定义了资源路径获取方法
+                "effect": "boost"}
         }
-        if self.type in obstacle_info and "image_path" in obstacle_info[self.type]:
-            raw_image = pygame.image.load(obstacle_info[self.type]["image_path"]).convert_alpha()
-            self.image = pygame.transform.scale(raw_image, (self.rect.width, self.rect.height))
+        if self.type in obstacle_info and "image" in obstacle_info[self.type]:
+            self.image =obstacle_info[self.type]["image"]
         else:
             # 保持原有颜色逻辑
             self.color = obstacle_info[self.type]["color"]
@@ -75,22 +79,22 @@ class Obstacle:
 
 class Target:
     def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 40, 40)
+        self.rect = pygame.Rect(x, y, 50, 62)
         self.color = GREEN
         self.is_achieved = False
 
     def draw(self, screen):
         if not self.is_achieved:
-            pygame.draw.rect(screen, self.color, self.rect, border_radius=20)
-            pygame.draw.rect(screen, WHITE, self.rect.inflate(-10, -10), border_radius=10)
+            target_img = get_img_dir("img/screen_3/iteam", "bouns.png", self.rect.width, self.rect.height)
+            screen.blit(target_img, self.rect)
 
 class CatBall:
     def __init__(self, x, y, character):
         self.x = x
         self.y = y
         self.character = character
-        self.size = character.size
-        self.image = character.image
+        self.size = CAT_SIZE_STAGE_1
+        self.image = pygame.transform.smoothscale(character.image_ball,(CAT_SIZE_STAGE_1,CAT_SIZE_STAGE_1))
         self.rect = pygame.Rect(x, y, self.size, self.size)
         self.velocity = [0, 0]
         self.is_launched = False

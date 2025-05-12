@@ -13,14 +13,32 @@ class CatCharacter:
     def __init__(self, cat_type: CatType):  # 使用独立枚举类
         self.type = cat_type
         self.size = CAT_SIZE
-        self.image = self.create_cat_image()
+        self.image_ball = self.create_cat_image_ball()
+        self.image_menu = self.create_cat_image_menu()
         self.traits = self.set_traits()
 
-    def create_cat_image(self):
+    def create_cat_image_ball(self):
         file_names = {
             CatType.ORANGE: "ball_b.png",
             CatType.GRAY: "ball_buou.png",
             CatType.WHITE: "ball_ju.png"
+        }
+        color_map = {
+            CatType.ORANGE: ORANGE,
+            CatType.GRAY: GRAY,
+            CatType.WHITE: WHITE
+        }
+
+        image = get_img_dir("img/screen_3/cat_ball", file_names[self.type], self.size, self.size)
+        if is_fallback(image):
+            image = create_pixel_cat(color_map[self.type])
+        return image
+
+    def create_cat_image_menu(self):
+        file_names = {
+            CatType.ORANGE: "cat_b.png",
+            CatType.GRAY: "cat_buou.png",
+            CatType.WHITE: "cat_ju.png"
         }
         color_map = {
             CatType.ORANGE: ORANGE,
