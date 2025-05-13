@@ -6,7 +6,7 @@ from constants import (
     WHITE, GREEN, RED, BLUE, BLACK, PINK, GRAY, HEIGHT, WIDTH, CAT_SIZE_STAGE_1
 )
 from game.characters import CatType,CatCharacter
-from game.utils import get_img_dir, get_obs_dir
+from game.utils import get_img_dir
 
 
 class ObstacleType(Enum):

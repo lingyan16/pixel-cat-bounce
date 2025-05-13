@@ -1,6 +1,6 @@
 import os
 import pygame
-from constants import WIDTH, HEIGHT, WHITE, BLUE, FONT_SIZE, BIG_FONT_SIZE, FONT_NAME
+from constants import WHITE, BLUE, FONT_SIZE, BIG_FONT_SIZE, FONT_NAME
 
 
 def get_img_dir(folder, file_name, width, height):
@@ -15,9 +15,6 @@ def get_img_dir(folder, file_name, width, height):
         fallback = pygame.Surface((width, height))
         fallback.fill((230, 230, 250))
         return fallback
-
-def get_obs_dir(filename):
-    return os.path.join("img", "screen_3/iteam", filename)
 
 def create_pixel_cat(base_color):
     surface = pygame.Surface((40, 40), pygame.SRCALPHA)
