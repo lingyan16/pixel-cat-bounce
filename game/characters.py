@@ -66,7 +66,7 @@ class CatCharacter:
             },
             CatType.GRAY: {
                 "aim_assist": 3,
-                "bounce": 2,
+                "bounce": 5,
                 "special": "wall_jump"
             },
             CatType.WHITE: {

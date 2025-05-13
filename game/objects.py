@@ -3,7 +3,7 @@ import math
 import random
 from enum import Enum
 from constants import (
-    WHITE, GREEN, RED, BLUE, BLACK, PINK, GRAY, HEIGHT, WIDTH, CAT_SIZE_STAGE_1
+    WHITE, GREEN, RED, BLUE, BLACK, PINK, GRAY, HEIGHT, WIDTH, CAT_SIZE_STAGE_1, TARGET_SIZE
 )
 from game.characters import CatType,CatCharacter
 from game.utils import get_img_dir
@@ -16,6 +16,7 @@ class ObstacleType(Enum):
     TREAT = 4
     BLOCK = 5
     DESK = 6
+    BAN = 7
 
 class Obstacle:
     def __init__(self, x, y, width, height, obs_type):
@@ -35,7 +36,11 @@ class Obstacle:
             ObstacleType.DESK: {
                 "image": get_img_dir("img/screen_3/level/01", "01_di.png", self.rect.width, self.rect.height),
                 # 假设在utils中定义了资源路径获取方法
-                "effect": "boost"}
+                "effect": "stick"},
+            ObstacleType.BAN: {
+                "image": get_img_dir("img/screen_3/level/02", "02_tai.png", self.rect.width, self.rect.height),
+                # 假设在utils中定义了资源路径获取方法
+                "effect": None}
         }
         if self.type in obstacle_info and "image" in obstacle_info[self.type]:
             self.image =obstacle_info[self.type]["image"]
@@ -79,7 +84,7 @@ class Obstacle:
 
 class Target:
     def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 50, 62)
+        self.rect = pygame.Rect(x, y, TARGET_SIZE, TARGET_SIZE)
         self.color = GREEN
         self.is_achieved = False
 

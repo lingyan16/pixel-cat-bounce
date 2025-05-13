@@ -6,7 +6,8 @@ from game.characters import CatType, CatCharacter
 from game.objects import Obstacle, Target, CatBall, ObstacleType, Particle
 from game.utils import get_img_dir, init_fonts
 from constants import WIDTH, HEIGHT, BLACK, RED, WHITE, GREEN, CAT_SIZE, DESK_WIDTH, DESK_HEIGHT, BUTTON_SIZE, \
-    BAR_WIDTH, BAR_HEIGHT, KAISHI_SIZE_WIDTH, KAISHI_SIZE_HEIGHT, DARK_GRAY, LIGHT_PINK, CARD_WIDTH, CARD_HEIGHT
+    BAR_WIDTH, BAR_HEIGHT, KAISHI_SIZE_WIDTH, KAISHI_SIZE_HEIGHT, DARK_GRAY, LIGHT_PINK, CARD_WIDTH, CARD_HEIGHT, \
+    TARGET_SIZE
 
 
 class CatBounceGame:
@@ -63,7 +64,7 @@ class CatBounceGame:
             1: {
                 "bgs": self.level1_background,
                 "obstacles": [
-                    Obstacle(3 * WIDTH // 5, 3 * HEIGHT // 11, 500, 550, ObstacleType.BLOCK),
+                    Obstacle(3 * WIDTH // 5, 3 * HEIGHT // 12, 500, 550, ObstacleType.BLOCK),
                     # Obstacle(0, HEIGHT-DESK_HEIGHT, DESK_WIDTH, DESK_HEIGHT, ObstacleType.DESK),
 
                 ],
@@ -76,8 +77,9 @@ class CatBounceGame:
                     # Obstacle(400, 350, 100, 20, ObstacleType.BLOWER),
                     # Obstacle(300, 250, 200, 20, ObstacleType.TREAT),
                     # Obstacle(150, 150, 100, 20, ObstacleType.CATNIP)
+                    Obstacle(WIDTH // 22, 13 * HEIGHT // 50, 400, 60, ObstacleType.BAN)
                 ],
-                "targets": [Target(650, 100)]
+                "targets": [Target(WIDTH // 22 + 400 // 2, 13 * HEIGHT // 50 - TARGET_SIZE)]
             },
             3: {
                 "bgs": self.level3_background,
