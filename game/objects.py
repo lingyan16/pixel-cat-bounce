@@ -110,6 +110,16 @@ class Target:
             target_img = get_img_dir("img/screen_3/iteam", "bouns.png", self.rect.width, self.rect.height)
             screen.blit(target_img, self.rect)
 
+class Coin:
+    def __init__(self, x, y):
+        self.rect = pygame.Rect(x, y, TARGET_SIZE, TARGET_SIZE)
+        self.color = GREEN
+        self.is_achieved = False
+
+    def draw(self, screen):
+        target_img = get_img_dir("img/screen_3/iteam", "cat_coin.png", self.rect.width, self.rect.height)
+        screen.blit(target_img, self.rect)
+
 class CatBall:
     def __init__(self, x, y, character):
         self.x = x

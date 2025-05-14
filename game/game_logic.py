@@ -2,8 +2,11 @@ import random
 import pygame
 import sys
 import math
+
+from pygame import SRCALPHA
+
 from game.characters import CatType, CatCharacter
-from game.objects import Obstacle, Target, CatBall, ObstacleType, Particle
+from game.objects import Obstacle, Target, CatBall, ObstacleType, Particle, Coin
 from game.utils import get_img_dir, init_fonts
 from constants import WIDTH, HEIGHT, BLACK, RED, WHITE, GREEN, CAT_SIZE, DESK_WIDTH, DESK_HEIGHT, BUTTON_SIZE, \
     BAR_WIDTH, BAR_HEIGHT, KAISHI_SIZE_WIDTH, KAISHI_SIZE_HEIGHT, DARK_GRAY, LIGHT_PINK, CARD_WIDTH, CARD_HEIGHT, \
@@ -53,6 +56,7 @@ class CatBounceGame:
         self.bgs = None
         self.obstacles = []
         self.targets = []
+        self.coins = []
         self.launch_power = 0
         self.max_power = 25
         self.charging = False
@@ -68,7 +72,8 @@ class CatBounceGame:
                     # Obstacle(0, HEIGHT-DESK_HEIGHT, DESK_WIDTH, DESK_HEIGHT, ObstacleType.DESK),
 
                 ],
-                "targets": [Target(900, 130)]
+                "targets": [Target(900, 130)],
+                "coins": []
             },
             2: {
                 "bgs": self.level2_background,
@@ -80,7 +85,8 @@ class CatBounceGame:
                     Obstacle(WIDTH // 22, 13 * HEIGHT // 50, 400, 60, ObstacleType.TAI),
                     Obstacle(31 * WIDTH // 50, 0, (28 * WIDTH // 966) , (282 * HEIGHT // 546), ObstacleType.BAN)
                 ],
-                "targets": [Target(WIDTH // 22 + 400 // 2, 13 * HEIGHT // 50 - TARGET_SIZE)]
+                "targets": [Target(WIDTH // 22 + 400 // 2, 13 * HEIGHT // 50 - TARGET_SIZE)],
+                "coins": [Coin(835 * WIDTH // 967, HEIGHT - 230 * HEIGHT // 550 - TARGET_SIZE)]
             },
             3: {
                 "bgs": self.level3_background,
@@ -94,13 +100,15 @@ class CatBounceGame:
                     Obstacle(675 * WIDTH // 966, 0, 425 * WIDTH // 965, 15 * HEIGHT // 544, ObstacleType.LIGHT),
                     Obstacle(347 * WIDTH // 966, 371 * HEIGHT // 543, 148 * WIDTH // 965, 129 * HEIGHT// 544, ObstacleType.ROCK)
                 ],
-                "targets": [Target(700, 550), Target(700, 400)]
+                "targets": [Target(577 * WIDTH // 965, 168 * HEIGHT // 544 - TARGET_SIZE), Target(700, 400)],
+                "coins": []
             }
         }
         layout = level_layouts[self.level]
         self.bgs = layout["bgs"]
         self.obstacles = layout["obstacles"]
         self.targets = layout["targets"]
+        self.coins = layout["coins"]
         if self.selected_cat:
             self.cat_ball = CatBall(100, HEIGHT-CAT_SIZE-DESK_HEIGHT, self.selected_cat)
 
@@ -233,6 +241,11 @@ class CatBounceGame:
                 self.state = "level_complete"
             elif self.balls_left <= 0 and not self.cat_ball.is_launched:
                 self.state = "game_over"
+            for coin in self.coins:
+                if self.cat_ball.rect.colliderect(coin.rect):
+                    coin.is_achieved = True
+                    self.screen.blit(self.level2_background, (coin.rect.x, coin.rect.y), area=(coin.rect.x, coin.rect.y, TARGET_SIZE, TARGET_SIZE))
+                    pygame.display.update(coin.rect.x, coin.rect.y, TARGET_SIZE, TARGET_SIZE)
 
     def draw(self):
         if self.screen is None:  # 检查屏幕是否有效
@@ -318,9 +331,9 @@ class CatBounceGame:
                 self.screen.blit(self.select_button, button_rect)
 
                 # 按钮文字
-                text = self.font.render("选择", True, WHITE)
-                text_rect = text.get_rect(center=button_rect.center)
-                self.screen.blit(text, text_rect)
+                # text = self.font.render("选择", True, WHITE)
+                # text_rect = text.get_rect(center=button_rect.center)
+                # self.screen.blit(text, text_rect)
 
                 # 属性显示（下移避开按钮区域）
                 # 力量进度条
@@ -349,9 +362,12 @@ class CatBounceGame:
                 obstacle.draw(self.screen)
             for target in self.targets:
                 target.draw(self.screen)
+            for coin in self.coins:
+                if not coin.is_achieved:
+                    coin.draw(self.screen)
             if self.cat_ball:
-
                 self.cat_ball.draw(self.screen)
+
 
             if self.charging and self.selected_cat.traits["aim_assist"] > 0:
                 for i in range(len(self.aim_line)-1):
