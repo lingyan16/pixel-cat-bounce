@@ -77,7 +77,8 @@ class CatBounceGame:
                     # Obstacle(400, 350, 100, 20, ObstacleType.BLOWER),
                     # Obstacle(300, 250, 200, 20, ObstacleType.TREAT),
                     # Obstacle(150, 150, 100, 20, ObstacleType.CATNIP)
-                    Obstacle(WIDTH // 22, 13 * HEIGHT // 50, 400, 60, ObstacleType.BAN)
+                    Obstacle(WIDTH // 22, 13 * HEIGHT // 50, 400, 60, ObstacleType.TAI),
+                    Obstacle(31 * WIDTH // 50, 0, (28 * WIDTH // 966) , (282 * HEIGHT // 546), ObstacleType.BAN)
                 ],
                 "targets": [Target(WIDTH // 22 + 400 // 2, 13 * HEIGHT // 50 - TARGET_SIZE)]
             },
@@ -89,6 +90,9 @@ class CatBounceGame:
                     # Obstacle(500, 300, 100, 20, ObstacleType.TREAT),
                     # Obstacle(300, 200, 200, 20, ObstacleType.CAT_TREE),
                     # Obstacle(150, 100, 100, 20, ObstacleType.CATNIP)
+                    # Obstacle(22 * WIDTH // 968, 219 * HEIGHT // 543, 349 * WIDTH // 965, 280 * HEIGHT// 544, ObstacleType.GUI),
+                    Obstacle(675 * WIDTH // 966, 0, 425 * WIDTH // 965, 15 * HEIGHT // 544, ObstacleType.LIGHT),
+                    Obstacle(347 * WIDTH // 966, 371 * HEIGHT // 543, 148 * WIDTH // 965, 129 * HEIGHT// 544, ObstacleType.ROCK)
                 ],
                 "targets": [Target(700, 550), Target(700, 400)]
             }

@@ -16,7 +16,12 @@ class ObstacleType(Enum):
     TREAT = 4
     BLOCK = 5
     DESK = 6
-    BAN = 7
+    TAI = 7
+    BAN = 8
+    GUI = 9
+    LIGHT = 10
+    ROCK = 11
+
 
 class Obstacle:
     def __init__(self, x, y, width, height, obs_type):
@@ -36,10 +41,22 @@ class Obstacle:
             ObstacleType.DESK: {
                 "image": get_img_dir("img/screen_3/level/01", "01_di.png", self.rect.width, self.rect.height),
                 # 假设在utils中定义了资源路径获取方法
-                "effect": "stick"},
-            ObstacleType.BAN: {
+                "effect": None},
+            ObstacleType.TAI: {
                 "image": get_img_dir("img/screen_3/level/02", "02_tai.png", self.rect.width, self.rect.height),
+                "effect": None},
+            ObstacleType.BAN: {
+                "image": get_img_dir("img/screen_3/level/02", "02_ban.png", self.rect.width, self.rect.height),
                 # 假设在utils中定义了资源路径获取方法
+                "effect": None},
+            ObstacleType.GUI: {
+                "image": get_img_dir("img/screen_3/level/03", "03_gui.png", self.rect.width, self.rect.height),
+                "effect": None},
+            ObstacleType.LIGHT: {
+                "image": get_img_dir("img/screen_3/level/03", "03_light.png", self.rect.width, self.rect.height),
+                "effect": None},
+            ObstacleType.ROCK: {
+                "image": get_img_dir("img/screen_3/level/03", "03_rock.png", self.rect.width, self.rect.height),
                 "effect": None}
         }
         if self.type in obstacle_info and "image" in obstacle_info[self.type]:
