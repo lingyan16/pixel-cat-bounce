@@ -3,8 +3,6 @@ import pygame
 import sys
 import math
 
-from pygame import SRCALPHA
-
 from game.characters import CatType, CatCharacter
 from game.objects import Obstacle, Target, CatBall, ObstacleType, Particle, Coin
 from game.utils import get_img_dir, init_fonts

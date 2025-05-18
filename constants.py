@@ -1,5 +1,3 @@
-from enum import Enum
-import pygame
 
 # 屏幕尺寸
 WIDTH, HEIGHT = 1280, 720
