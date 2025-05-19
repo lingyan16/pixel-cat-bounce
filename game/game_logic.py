@@ -4,11 +4,11 @@ import sys
 import math
 
 from game.characters import CatType, CatCharacter
-from game.objects import Obstacle, Target, CatBall, ObstacleType, Particle, Coin
+from game.objects import Obstacle, Target, CatBall, ObstacleType, Coin, FireflyParticle
 from game.utils import get_img_dir, init_fonts
 from constants import WIDTH, HEIGHT, BLACK, RED, WHITE, GREEN, CAT_SIZE, DESK_WIDTH, DESK_HEIGHT, BUTTON_SIZE, \
     BAR_WIDTH, BAR_HEIGHT, KAISHI_SIZE_WIDTH, KAISHI_SIZE_HEIGHT, DARK_GRAY, LIGHT_PINK, CARD_WIDTH, CARD_HEIGHT, \
-    TARGET_SIZE, ELASTICITY, GRAVITY
+    TARGET_SIZE, ELASTICITY, GRAVITY, FONT_NAME, FONT_SIZE
 
 
 class CatBounceGame:
@@ -30,10 +30,10 @@ class CatBounceGame:
         # 开始界面
         self.begin_background = get_img_dir("img/screen_begin", "screen_begin.png", WIDTH, HEIGHT)
         self.begin_button_img = get_img_dir("img/screen_begin", "kaishi.png", KAISHI_SIZE_WIDTH, KAISHI_SIZE_HEIGHT)
-        self.button_rect = self.begin_button_img.get_rect(center=(WIDTH // 2, 500)) # 开始按钮位置
+        self.button_rect = self.begin_button_img.get_rect(center=(WIDTH // 2, 500))  # 开始按钮位置
         # 菜单界面
-        self.menu_background = get_img_dir("img/screen_menu", "screen_menu.png", WIDTH, HEIGHT) # 菜单背景
-        self.select_button = get_img_dir("img/screen_menu", "select_button.png", BUTTON_SIZE, BUTTON_SIZE) # 加载选择按钮素材
+        self.menu_background = get_img_dir("img/screen_menu", "screen_menu.png", WIDTH, HEIGHT)  # 菜单背景
+        self.select_button = get_img_dir("img/screen_menu", "select_button.png", BUTTON_SIZE, BUTTON_SIZE)  # 加载选择按钮素材
         # 第一关
         self.level1_background = get_img_dir("img/screen_3/level/01", "stage_01.png", WIDTH, HEIGHT)
         # 第二关
@@ -43,11 +43,13 @@ class CatBounceGame:
         # 游戏结束
         self.gameOver_background = get_img_dir("img", "game_over.png", WIDTH, HEIGHT)
         # self.click_sound = pygame.mixer.Sound('audio/click.wav')
-        self.particles = []  # 存储活跃粒子
-        self.particle_spawn_timer = 0  # 粒子生成计时器
         self.reset_game()
         # 修改初始化状态
         self.state = "begin"  # 新增初始状态
+        self.fireflies = [FireflyParticle(
+            random.randint(0, WIDTH),
+            random.randint(0, HEIGHT)
+        ) for _ in range(30)]  # 30只萤火虫
 
     def reset_game(self):
         self.cat_ball = None
@@ -56,7 +58,7 @@ class CatBounceGame:
         self.targets = []
         self.coins = []
         self.launch_power = 0
-        self.max_power = 25
+        self.max_power = 30
         self.charging = False
         self.aim_line = []
         self.setup_level()
@@ -67,7 +69,7 @@ class CatBounceGame:
                 "bgs": self.level1_background,
                 "obstacles": [
                     Obstacle(3 * WIDTH // 5, 3 * HEIGHT // 12, 500, 550, ObstacleType.BLOCK),
-                    # Obstacle(0, HEIGHT-DESK_HEIGHT, DESK_WIDTH, DESK_HEIGHT, ObstacleType.DESK),
+                    # Obstacle(0, 550, DESK_WIDTH, DESK_HEIGHT, ObstacleType.DESK),
 
                 ],
                 "targets": [Target(900, 130)],
@@ -81,7 +83,7 @@ class CatBounceGame:
                     # Obstacle(300, 250, 200, 20, ObstacleType.TREAT),
                     # Obstacle(150, 150, 100, 20, ObstacleType.CATNIP)
                     Obstacle(WIDTH // 22, 13 * HEIGHT // 50, 400, 60, ObstacleType.TAI),
-                    Obstacle(31 * WIDTH // 50, 0, (28 * WIDTH // 966) , (282 * HEIGHT // 546), ObstacleType.BAN)
+                    Obstacle(31 * WIDTH // 50, 0, (28 * WIDTH // 966), (282 * HEIGHT // 546), ObstacleType.BAN)
                 ],
                 "targets": [Target(WIDTH // 22 + 400 // 2, 13 * HEIGHT // 50 - TARGET_SIZE)],
                 "coins": [Coin(835 * WIDTH // 967, HEIGHT - 230 * HEIGHT // 550 - TARGET_SIZE)]
@@ -96,7 +98,8 @@ class CatBounceGame:
                     # Obstacle(150, 100, 100, 20, ObstacleType.CATNIP)
                     # Obstacle(22 * WIDTH // 968, 219 * HEIGHT // 543, 349 * WIDTH // 965, 280 * HEIGHT// 544, ObstacleType.GUI),
                     Obstacle(675 * WIDTH // 966, 0, 425 * WIDTH // 965, 15 * HEIGHT // 544, ObstacleType.LIGHT),
-                    Obstacle(347 * WIDTH // 966, 371 * HEIGHT // 543, 148 * WIDTH // 965, 129 * HEIGHT// 544, ObstacleType.ROCK)
+                    Obstacle(347 * WIDTH // 966, 371 * HEIGHT // 543, 148 * WIDTH // 965, 129 * HEIGHT // 544,
+                             ObstacleType.ROCK)
                 ],
                 "targets": [Target(577 * WIDTH // 965, 168 * HEIGHT // 544 - TARGET_SIZE), Target(700, 400)],
                 "coins": []
@@ -108,16 +111,7 @@ class CatBounceGame:
         self.targets = layout["targets"]
         self.coins = layout["coins"]
         if self.selected_cat:
-            self.cat_ball = CatBall(100, HEIGHT-CAT_SIZE-DESK_HEIGHT, self.selected_cat)
-
-    def spawn_particles(self, effect_type):
-        if len(self.particles) > 100:  # 最大粒子数限制
-            return
-        """生成粒子群"""
-        for _ in range(random.randint(3, 5)):
-            x = random.randint(0, WIDTH)
-            y = random.randint(0, HEIGHT)
-            self.particles.append(Particle(x, y, effect_type))
+            self.cat_ball = CatBall(100, HEIGHT - CAT_SIZE - DESK_HEIGHT, self.selected_cat)
 
     def handle_events(self):
         pygame.event.pump()
@@ -148,7 +142,8 @@ class CatBounceGame:
                 base_y = 300
                 for i, cat in enumerate(self.cat_options):
                     pos_x = start_x + i * option_spacing
-                    cat_rect = pygame.Rect(pos_x + CARD_WIDTH // 2 - BUTTON_SIZE // 2, base_y + CAT_SIZE + 60, BUTTON_SIZE, BUTTON_SIZE)
+                    cat_rect = pygame.Rect(pos_x + CARD_WIDTH // 2 - BUTTON_SIZE // 2, base_y + CAT_SIZE + 60,
+                                           BUTTON_SIZE, BUTTON_SIZE)
                     if cat_rect.collidepoint(mouse_pos):
                         self.selected_cat = cat
                         self.state = "playing"
@@ -190,6 +185,15 @@ class CatBounceGame:
         if self.state != "playing":
             return
 
+        for firefly in self.fireflies:
+            firefly.update()
+            if firefly.lifetime <= 0:  # 重生萤火虫
+                self.fireflies.remove(firefly)
+                self.fireflies.append(FireflyParticle(
+                    random.randint(0, WIDTH),
+                    random.randint(0, HEIGHT)
+                ))
+
         if self.transition_rect:
             self.transition_rect.inflate_ip(-20, -20)
             if self.transition_rect.width <= 0:
@@ -203,14 +207,18 @@ class CatBounceGame:
             angle = math.atan2(dy, dx)
             power = min(self.launch_power, self.max_power)
 
+            # 计算小球中心点
+            ball_center_x = self.cat_ball.x + self.cat_ball.size // 2
+            ball_center_y = self.cat_ball.y + self.cat_ball.size // 2
+            
             self.aim_line = []
             steps = 20 + self.selected_cat.traits["aim_assist"] * 10
             for i in range(1, steps):
                 t = i * 0.1
                 vx = power * math.cos(angle)
-                vy = -power * math.sin(angle)
-                x = self.cat_ball.x + self.cat_ball.size // 2 + vx * t
-                y = self.cat_ball.y + self.cat_ball.size // 2 + vy * t + 0.5 * GRAVITY * t * t
+                vy = power * math.sin(angle)  # 移除负号，保持与鼠标方向一致
+                x = ball_center_x + vx * t
+                y = ball_center_y + vy * t + 0.5 * 0.3 * t * t  # 重力保持向下
                 if x < 0 or x > WIDTH or y > HEIGHT:
                     break
                 self.aim_line.append((x, y))
@@ -220,23 +228,46 @@ class CatBounceGame:
             self.cat_ball.is_colliding = False
             for obstacle in self.obstacles:
                 if self.cat_ball.rect.colliderect(obstacle.rect):
-                    self.cat_ball.is_colliding = True
-                    self.cat_ball.collision_count += 1
-                    obstacle.apply_effect(self.cat_ball)
+                    # 计算相对位置
+                    offset_x = obstacle.rect.x - self.cat_ball.rect.x
+                    offset_y = obstacle.rect.y - self.cat_ball.rect.y
 
-                    # 计算碰撞法线
-                    dx = self.cat_ball.rect.centerx - obstacle.rect.centerx
-                    dy = self.cat_ball.rect.centery - obstacle.rect.centery
-                    normal = [0, 0]
-                    if abs(dx) > abs(dy):
-                        normal[0] = -1 if dx > 0 else 1
-                    else:
-                        normal[1] = -1 if dy > 0 else 1
+                    # 使用mask进行像素级碰撞检测
+                    if self.cat_ball.mask.overlap(obstacle.mask, (offset_x, offset_y)):
+                        self.cat_ball.is_colliding = True
+                        self.cat_ball.collision_count += 1
+                        obstacle.apply_effect(self.cat_ball)
 
-                    # 应用法线弹射和碰撞能量衰减
-                    dot_product = self.cat_ball.velocity[0] * normal[0] + self.cat_ball.velocity[1] * normal[1]
-                    self.cat_ball.velocity[0] -= 2 * dot_product * normal[0] * ELASTICITY
-                    self.cat_ball.velocity[1] -= 2 * dot_product * normal[1] * ELASTICITY
+                        if obstacle.effect != "stick":
+                            # 获取碰撞法线
+                            collision_normal = obstacle.get_collision_normal(self.cat_ball.rect)
+
+                            # 简化的碰撞响应
+                            if abs(collision_normal[0]) > 0:  # 水平碰撞
+                                # 水平碰撞 - 反转x速度
+                                self.cat_ball.velocity[0] = -self.cat_ball.velocity[0] * ELASTICITY
+
+                                # 微调位置避免卡住
+                                if collision_normal[0] > 0:  # 从左侧碰撞
+                                    self.cat_ball.x = obstacle.rect.left - self.cat_ball.size - 1
+                                else:  # 从右侧碰撞
+                                    self.cat_ball.x = obstacle.rect.right + 1
+                            else:  # 垂直碰撞
+                                # 垂直碰撞 - 反转y速度
+                                self.cat_ball.velocity[1] = -self.cat_ball.velocity[1] * ELASTICITY
+
+                                # 微调位置避免卡住
+                                if collision_normal[1] > 0:  # 从上方碰撞
+                                    self.cat_ball.y = obstacle.rect.top - self.cat_ball.size - 1
+                                else:  # 从下方碰撞
+                                    self.cat_ball.y = obstacle.rect.bottom + 1
+
+                            # 更新矩形位置
+                            self.cat_ball.rect.x = int(self.cat_ball.x)
+                            self.cat_ball.rect.y = int(self.cat_ball.y)
+                    # 确保不修改障碍物的位置
+                    obstacle.rect.x = obstacle.rect.x
+                    obstacle.rect.y = obstacle.rect.y
 
             for target in self.targets:
                 if not target.is_achieved and self.cat_ball.rect.colliderect(target.rect):
@@ -250,7 +281,8 @@ class CatBounceGame:
             for coin in self.coins:
                 if self.cat_ball.rect.colliderect(coin.rect):
                     coin.is_achieved = True
-                    self.screen.blit(self.level2_background, (coin.rect.x, coin.rect.y), area=(coin.rect.x, coin.rect.y, TARGET_SIZE, TARGET_SIZE))
+                    self.screen.blit(self.level2_background, (coin.rect.x, coin.rect.y),
+                                     area=(coin.rect.x, coin.rect.y, TARGET_SIZE, TARGET_SIZE))
                     pygame.display.update(coin.rect.x, coin.rect.y, TARGET_SIZE, TARGET_SIZE)
 
     def draw(self):
@@ -266,33 +298,35 @@ class CatBounceGame:
             # 绘制动态背景
             self.screen.blit(self.begin_background, (0, 0))
 
-            # 生成星光粒子（每帧生成）
-            if random.random() < 0.2:
-                self.spawn_particles("star")
-
-            # 绘制所有粒子
-            for p in self.particles:
-                p.draw(self.screen)
+            for firefly in self.fireflies:
+                firefly.draw(self.screen)
 
             # 绘制开始按钮（带点击反馈）
             button_rect = self.begin_button_img.get_rect(center=(WIDTH // 2, 500))
             self.screen.blit(self.begin_button_img, button_rect)
 
-            # 按钮悬停时的粒子喷发效果[5](@ref)
-            if button_rect.collidepoint(pygame.mouse.get_pos()):
-                self.spawn_particles("sparkle")
-
-            # # 标题文字动画
-            # title_text = self.big_font.render("猫咪弹珠大冒险", True, (255, 215, 0))
-            # pulsate = abs(pygame.time.get_ticks() % 1000 - 500) / 500  # 呼吸效果
-            # scaled_title = pygame.transform.smoothscale(title_text,
-            #                                             (int(title_text.get_width() * (1 + pulsate * 0.1)),
-            #                                              int(title_text.get_height() * (1 + pulsate * 0.1))))
-            # self.screen.blit(scaled_title, (WIDTH // 2 - scaled_title.get_width() // 2, 200))
+            # 标题文字动画
+            title_text = self.big_font.render("点击开始游戏", True, (255, 215, 0))
+            pulsate = abs(pygame.time.get_ticks() % 1000 - 500) / 500  # 呼吸效果
+            scaled_title = pygame.transform.smoothscale(title_text,
+                                                        (int(title_text.get_width() * (1 + pulsate * 0.1)),
+                                                         int(title_text.get_height() * (1 + pulsate * 0.1))))
+            self.screen.blit(scaled_title, (WIDTH // 2 - title_text.get_width() // 2, 550))
 
             # 开发者信息
-            credit_text = self.font.render("点击开始游戏", True, WHITE)
-            self.screen.blit(credit_text, (WIDTH // 2 - credit_text.get_width() // 2, 550))
+            # 使用小号字体显示开发者信息
+            small_font = pygame.font.SysFont(FONT_NAME, FONT_SIZE // 2)
+            
+            # 分行显示制作人员信息
+            boss_text = small_font.render("BOSS: 面团", True, WHITE)
+            dev_text = small_font.render("开发者: 小毅", True, WHITE)
+            art_text = small_font.render("美工: 老林", True, WHITE)
+            
+            # 计算垂直位置，从下往上排列
+            y_start = HEIGHT - 80
+            self.screen.blit(boss_text, (WIDTH // 2 - boss_text.get_width() // 2, y_start))
+            self.screen.blit(dev_text, (WIDTH // 2 - dev_text.get_width() // 2, y_start + 25))
+            self.screen.blit(art_text, (WIDTH // 2 - art_text.get_width() // 2, y_start + 50))
 
 
         # 菜单绘制逻辑
@@ -314,7 +348,7 @@ class CatBounceGame:
 
             # 动态布局计算
             option_spacing = 200  # 选项间距增加
-            total_width = (len(self.cat_options) - 1) * (option_spacing + CAT_SIZE) + CAT_SIZE # 总宽度包含按钮
+            total_width = (len(self.cat_options) - 1) * (option_spacing + CAT_SIZE) + CAT_SIZE  # 总宽度包含按钮
             start_x = (WIDTH - total_width) // 2
             base_y = 300  # 基础Y坐标
 
@@ -333,7 +367,8 @@ class CatBounceGame:
 
                 # 选择按钮（位于图片下方40px处）
                 button_y = base_y + CAT_SIZE + 60  # 图片高度 + 间隔60
-                button_rect = self.select_button.get_rect(topleft=(pos_x + CARD_WIDTH // 2 - BUTTON_SIZE // 2, button_y))
+                button_rect = self.select_button.get_rect(
+                    topleft=(pos_x + CARD_WIDTH // 2 - BUTTON_SIZE // 2, button_y))
                 self.screen.blit(self.select_button, button_rect)
 
                 # 按钮文字
@@ -362,7 +397,7 @@ class CatBounceGame:
                     self.screen.blit(text_surf, pos)
 
         elif self.state == "playing":
-            #self.screen.blit(self.level1_background, (0, 0))
+            # self.screen.blit(self.level1_background, (0, 0))
             self.screen.blit(self.bgs, (0, 0))
             for obstacle in self.obstacles:
                 obstacle.draw(self.screen)
@@ -374,17 +409,104 @@ class CatBounceGame:
             if self.cat_ball:
                 self.cat_ball.draw(self.screen)
 
-
             if self.charging and self.selected_cat.traits["aim_assist"] > 0:
-                for i in range(len(self.aim_line)-1):
-                    pygame.draw.line(self.screen, (100,100,255),
-                                    self.aim_line[i], self.aim_line[i+1], 5)
+                # 创建透明surface用于发光效果
+                glow_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+                
+                # 根据力度计算颜色(从蓝到红)
+                power_ratio = min(self.launch_power / self.max_power, 1.0)
+                base_color = (
+                    int(100 + 155 * power_ratio),  # R: 100-255
+                    int(200 - 150 * power_ratio),  # G: 200-50
+                    int(255 - 150 * power_ratio)   # B: 255-105
+                )
+                
+                # 计算发射角度用于光晕方向
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+                dx = mouse_x - self.cat_ball.x
+                dy = mouse_y - self.cat_ball.y
+                angle = math.atan2(dy, dx)
+                
+                # 绘制三层线条实现光晕效果
+                for glow in range(3):
+                    # 每层不同的透明度和宽度
+                    alpha = 80 + glow * 40
+                    width = 5 - glow
+                    
+                    for i in range(len(self.aim_line) - 1):
+                        # 计算当前段颜色(起点亮，终点暗)
+                        segment_ratio = i / len(self.aim_line)
+                        r = base_color[0] * (1 - segment_ratio * 0.5)
+                        g = base_color[1] * (1 - segment_ratio * 0.5)
+                        b = base_color[2] * (1 - segment_ratio * 0.3)
+                        
+                        # 根据角度调整线条宽度(垂直于发射方向变细)
+                        angle_factor = abs(math.cos(angle - math.atan2(
+                            self.aim_line[i+1][1] - self.aim_line[i][1],
+                            self.aim_line[i+1][0] - self.aim_line[i][0]
+                        )))
+                        current_width = max(1, width * (0.5 + 0.5 * angle_factor))
+                        
+                        pygame.draw.line(
+                            glow_surface,
+                            (int(r), int(g), int(b), alpha),
+                            self.aim_line[i],
+                            self.aim_line[i + 1],
+                            int(current_width)
+                        )
+                
+                # 绘制动态光点(沿发射方向流动)
+                flow_speed = 0.1 * self.launch_power
+                flow_offset = int(pygame.time.get_ticks() * flow_speed / 50) % 10
+                
+                for i in range(0, len(self.aim_line) - 5, 3):
+                    pos = (i + flow_offset) % len(self.aim_line)
+                    point = self.aim_line[pos]
+                    
+                    # 计算光点大小和透明度(起点大，终点小)
+                    size = 3 * (1 - pos/len(self.aim_line))
+                    alpha = 150 * (1 - pos/len(self.aim_line))
+                    
+                    # 光点颜色随力度变化
+                    dot_color = (
+                        min(255, base_color[0] + 50),
+                        min(255, base_color[1] + 50),
+                        min(255, base_color[2] + 50),
+                        int(alpha)
+                    )
+                    
+                    pygame.draw.circle(
+                        glow_surface,
+                        dot_color,
+                        (int(point[0]), int(point[1])),
+                        int(size)
+                    )
+                
+                # 合并到主画面
+                self.screen.blit(glow_surface, (0, 0))
+                
+                # 绘制主线条(更亮更细)
+                for i in range(len(self.aim_line) - 1):
+                    # 线条颜色随距离渐变
+                    segment_ratio = i / len(self.aim_line)
+                    line_color = (
+                        min(255, base_color[0] + 100 - int(100 * segment_ratio)),
+                        min(255, base_color[1] + 100 - int(100 * segment_ratio)),
+                        min(255, base_color[2] + 50 - int(50 * segment_ratio))
+                    )
+                    pygame.draw.line(
+                        self.screen,
+                        line_color,
+                        self.aim_line[i],
+                        self.aim_line[i + 1],
+                        2
+                    )
 
-            #绘制冰箱图层
+            # 绘制冰箱图层
             # select_bingxiang = get_img_dir("img/screen_3/level/01", "01_bingxiang.png", 1280, 720)
             # self.screen.blit(select_bingxiang, (0, -0))
-            #select_di = get_img_dir("img/screen_3/level/01", "01_di.png", 1280, 720)
-            #self.screen.blit(select_di, (0, -0))
+            # select_di = get_img_dir("img/screen_3/level/01", "01_di.png", 1280, 720)
+            # self.screen.blit(select_di, (0, -0))
 
             # 绘制蓄力条
             if self.charging:

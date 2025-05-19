@@ -59,16 +59,17 @@ class CatCharacter:
         }
         type_traits = {
             CatType.ORANGE: {
-                "power": 1.5,
+                "power": 1.6,
                 "aim_assist": 1,
                 "special": "power_shot"
             },
             CatType.GRAY: {
+                "power": 1.3,
                 "aim_assist": 3,
                 "special": "wall_jump"
             },
             CatType.WHITE: {
-                "power": 0.8,
+                "power": 1,
                 "aim_assist": 2,
                 "special": "quick_charge"
             }
