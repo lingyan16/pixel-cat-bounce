@@ -7,6 +7,7 @@ from constants import (
 )
 from game.characters import CatType,CatCharacter
 from game.utils import get_img_dir
+from constants import GRAVITY, ELASTICITY, FRICTION, WIDTH
 
 
 class ObstacleType(Enum):
@@ -29,38 +30,50 @@ class Obstacle:
         self.image = None
         self.type = obs_type
         self.setup_obstacle()
+        # 创建遮罩
+        if self.image:
+            self.mask = pygame.mask.from_surface(self.image)
+        else:
+            # 如果没有图片，创建一个矩形遮罩
+            self.mask = pygame.mask.Mask((width, height), True)
 
     def setup_obstacle(self):
         obstacle_info = {
             ObstacleType.BLOWER: {"color": (200, 230, 255), "effect": "blow"},
             ObstacleType.CAT_TREE: {"color": (160, 82, 45), "effect": "bounce_vertical"},
-            ObstacleType.CATNIP: { "color": (144, 238, 144), "effect": "stick"},
+            ObstacleType.CATNIP: {"color": (144, 238, 144), "effect": "stick"},
             ObstacleType.TREAT: {"color": (255, 215, 0), "effect": "boost"},
-            ObstacleType.BLOCK: { "image": get_img_dir("img/screen_3/level/01","01_bingxiang.png",self.rect.width,self.rect.height),  # 假设在utils中定义了资源路径获取方法
-                "effect": None},
+            ObstacleType.BLOCK: {
+                "image": get_img_dir("img/screen_3/level/01", "01_bingxiang.png", self.rect.width, self.rect.height),
+                "effect": None
+            },
             ObstacleType.DESK: {
                 "image": get_img_dir("img/screen_3/level/01", "01_di.png", self.rect.width, self.rect.height),
-                # 假设在utils中定义了资源路径获取方法
-                "effect": None},
+                "effect": None
+            },
             ObstacleType.TAI: {
                 "image": get_img_dir("img/screen_3/level/02", "02_tai.png", self.rect.width, self.rect.height),
-                "effect": None},
+                "effect": None
+            },
             ObstacleType.BAN: {
                 "image": get_img_dir("img/screen_3/level/02", "02_ban.png", self.rect.width, self.rect.height),
-                # 假设在utils中定义了资源路径获取方法
-                "effect": None},
+                "effect": None
+            },
             ObstacleType.GUI: {
                 "image": get_img_dir("img/screen_3/level/03", "03_gui.png", self.rect.width, self.rect.height),
-                "effect": None},
+                "effect": None
+            },
             ObstacleType.LIGHT: {
                 "image": get_img_dir("img/screen_3/level/03", "03_light.png", self.rect.width, self.rect.height),
-                "effect": None},
+                "effect": None
+            },
             ObstacleType.ROCK: {
                 "image": get_img_dir("img/screen_3/level/03", "03_rock.png", self.rect.width, self.rect.height),
-                "effect": None}
+                "effect": None
+            }
         }
         if self.type in obstacle_info and "image" in obstacle_info[self.type]:
-            self.image =obstacle_info[self.type]["image"]
+            self.image = obstacle_info[self.type]["image"]
         else:
             # 保持原有颜色逻辑
             self.color = obstacle_info[self.type]["color"]
@@ -126,14 +139,16 @@ class CatBall:
         self.y = y
         self.character = character
         self.size = CAT_SIZE_STAGE_1
-        self.image = pygame.transform.smoothscale(character.image_ball,(CAT_SIZE_STAGE_1,CAT_SIZE_STAGE_1))
+        self.image = pygame.transform.smoothscale(character.image_ball, (CAT_SIZE_STAGE_1, CAT_SIZE_STAGE_1))
         self.rect = pygame.Rect(x, y, self.size, self.size)
         self.velocity = [0, 0]
         self.is_launched = False
         self.is_colliding = False
         self.collision_count = 0
-        self.wall_bounces = 0
-        self.max_bounces = character.traits["bounce"]
+        # self.wall_bounces = 0
+        # self.max_bounces = character.traits["bounce"]
+        # 创建遮罩
+        self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
         self.velocity[1] += 0.3
@@ -145,11 +160,6 @@ class CatBall:
         if self.x < 0 or self.x > WIDTH - self.size:
             self.velocity[0] *= -0.7
             self.x = max(0, min(WIDTH - self.size, self.x))
-            self.wall_bounces += 1
-            if (self.character.type == CatType.GRAY and
-                    self.wall_bounces <= self.max_bounces and
-                    abs(self.velocity[0]) > 2):
-                self.velocity[0] *= 1.5
 
         if self.y > HEIGHT - self.size:
             self.y = HEIGHT - self.size

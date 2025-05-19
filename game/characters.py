@@ -55,7 +55,6 @@ class CatCharacter:
         base_traits = {
             "power": 1.0,
             "aim_assist": 0,
-            "bounce": 0,
             "special": None
         }
         type_traits = {
@@ -66,7 +65,6 @@ class CatCharacter:
             },
             CatType.GRAY: {
                 "aim_assist": 3,
-                "bounce": 5,
                 "special": "wall_jump"
             },
             CatType.WHITE: {

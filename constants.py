@@ -40,3 +40,8 @@ DESK_WIDTH, DESK_HEIGHT = 750, 200
 
 # 终点大小
 TARGET_SIZE = 50
+
+# 物理参数
+GRAVITY = 0.98  # 重力加速度
+ELASTICITY = 1  # 弹性系数，用于碰撞能量衰减
+FRICTION = 0.98  # 摩擦系数

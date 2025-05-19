@@ -8,7 +8,7 @@ from game.objects import Obstacle, Target, CatBall, ObstacleType, Particle, Coin
 from game.utils import get_img_dir, init_fonts
 from constants import WIDTH, HEIGHT, BLACK, RED, WHITE, GREEN, CAT_SIZE, DESK_WIDTH, DESK_HEIGHT, BUTTON_SIZE, \
     BAR_WIDTH, BAR_HEIGHT, KAISHI_SIZE_WIDTH, KAISHI_SIZE_HEIGHT, DARK_GRAY, LIGHT_PINK, CARD_WIDTH, CARD_HEIGHT, \
-    TARGET_SIZE
+    TARGET_SIZE, ELASTICITY, GRAVITY
 
 
 class CatBounceGame:
@@ -209,8 +209,8 @@ class CatBounceGame:
                 t = i * 0.1
                 vx = power * math.cos(angle)
                 vy = -power * math.sin(angle)
-                x = self.cat_ball.x + vx * t
-                y = self.cat_ball.y + vy * t + 0.5 * 0.3 * t * t
+                x = self.cat_ball.x + self.cat_ball.size // 2 + vx * t
+                y = self.cat_ball.y + self.cat_ball.size // 2 + vy * t + 0.5 * GRAVITY * t * t
                 if x < 0 or x > WIDTH or y > HEIGHT:
                     break
                 self.aim_line.append((x, y))
@@ -223,12 +223,20 @@ class CatBounceGame:
                     self.cat_ball.is_colliding = True
                     self.cat_ball.collision_count += 1
                     obstacle.apply_effect(self.cat_ball)
-                    if obstacle.effect != "stick":
-                        if abs(self.cat_ball.rect.centerx - obstacle.rect.centerx) > abs(
-                                self.cat_ball.rect.centery - obstacle.rect.centery):
-                            self.cat_ball.velocity[0] *= -0.7
-                        else:
-                            self.cat_ball.velocity[1] *= -0.7
+
+                    # 计算碰撞法线
+                    dx = self.cat_ball.rect.centerx - obstacle.rect.centerx
+                    dy = self.cat_ball.rect.centery - obstacle.rect.centery
+                    normal = [0, 0]
+                    if abs(dx) > abs(dy):
+                        normal[0] = -1 if dx > 0 else 1
+                    else:
+                        normal[1] = -1 if dy > 0 else 1
+
+                    # 应用法线弹射和碰撞能量衰减
+                    dot_product = self.cat_ball.velocity[0] * normal[0] + self.cat_ball.velocity[1] * normal[1]
+                    self.cat_ball.velocity[0] -= 2 * dot_product * normal[0] * ELASTICITY
+                    self.cat_ball.velocity[1] -= 2 * dot_product * normal[1] * ELASTICITY
 
             for target in self.targets:
                 if not target.is_achieved and self.cat_ball.rect.colliderect(target.rect):
